@@ -67,7 +67,7 @@
 ## 기능
 - open_nerp_session : SAP을 켜서 session 반환
 - exist_lc_ZSDP10200_C : L/C 등록여부를 확인하여 bool 반환
-- crawl_lc_ZSDP10200_C : 등록왼 L/C의 내역을 가져와 dict 반환
+- crawl_lc_ZSDP10200_C : 등록된 L/C의 내역을 가져와 dict 반환
 - input_and_search_xml_ZLLEI09020 : 특정 조건의 xml문서내역 조회
 - loop_get_xml_ZLLEI09020 : 조회된 xml문서들을 db에 추가
 - input_and_search_taxinv_ZRSDM62110 : 특정 조건의 세금계산서 내역 조회
