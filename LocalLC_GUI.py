@@ -450,8 +450,6 @@ def loop_get_taxinv_ZRSDM62110(session, taxinv_id:dict, cursorandcon)->None:
             session.findById("wnd[1]").close()
             session.findById("wnd[0]").sendVKey(3)
 
-
-
             session.findById("wnd[0]").sendVKey (3)
 
         # 정상진입이 된 케이스라면 데이터 수집(안되었다면 Total 또는 Sub Total 행으로 Skip한다)
@@ -477,7 +475,13 @@ def loop_get_taxinv_ZRSDM62110(session, taxinv_id:dict, cursorandcon)->None:
         sql_query = f'''INSERT OR REPLACE INTO 세금계산서 
         VALUES (:{', :'.join(taxinv_id.keys())})
         '''
-        db_cursor.execute(sql_query, temp_row_taxinv)
+        
+        try:
+            db_cursor.execute(sql_query, temp_row_taxinv)
+        except:
+            conn_db, db_cursor = db_open(file_path_db)
+            db_cursor.execute(sql_query, temp_row_taxinv)
+        
         conn_db.commit()
         conn_db.close()   
 
