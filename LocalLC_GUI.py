@@ -210,7 +210,7 @@ def check_progress_localnego(row):
 
     if row['네고일자'] is not None:
         return '네고완료'
-    if lc_last_ship <= datetime.today().date(): # 1순위)신용장 유효기간
+    if lc_last_ship < datetime.today().date(): # 1순위)신용장 유효기간
         return '신용장 유효기간 만료'
     elif row['수령증_계산서번호'] is None or row['수령증_계산서번호'] == np.nan: # 2순위)수령증이 없는 케이스
         return '세금계산서가 발행되었으니 10일 이내 물품수령증 발행 필요\n(중소기업이 구매하는 경우는 예외)'
