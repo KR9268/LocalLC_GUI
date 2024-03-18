@@ -10,6 +10,8 @@ from typing import TypeVar, Tuple, List, Optional, Dict
 from urllib import parse
 from bs4 import BeautifulSoup
 import ctypes
+import shutil
+import os
 # 타 모듈에서 사용
 import subprocess
 import time
@@ -29,6 +31,17 @@ def run_as_admin():
 file_path_db = 'C:\\python_source\\LocalLC\\' + 'LocalLC.db'
 file_path_json = 'C:\\python_source\\LocalLC\\default_opt.json'
 
+# db복사본을 만들고 시작
+file_number = 0
+file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db')
+while True:
+    if os.path.exists(file_path_db_backup):
+        file_number = file_number + 1
+        file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db')
+    else:
+        shutil.copy(file_path_db, file_path_db_backup)
+        break
+    
 locrct_id = {
     '전자문서번호':{'main_id':'IssueIdentifier', 'datatype':str},
     '신용장번호':{'main_id':'DocumentReferenceIdentifier', 'datatype':str},
