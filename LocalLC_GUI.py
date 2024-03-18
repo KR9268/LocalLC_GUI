@@ -475,13 +475,11 @@ def loop_get_taxinv_ZRSDM62110(session, taxinv_id:dict, cursorandcon)->None:
         sql_query = f'''INSERT OR REPLACE INTO 세금계산서 
         VALUES (:{', :'.join(taxinv_id.keys())})
         '''
-        
         try:
             db_cursor.execute(sql_query, temp_row_taxinv)
         except:
             conn_db, db_cursor = db_open(file_path_db)
             db_cursor.execute(sql_query, temp_row_taxinv)
-        
         conn_db.commit()
         conn_db.close()   
 
@@ -565,8 +563,11 @@ df_joined_taxinv_receipt = chk_and_change_df(db_to_df(*db_open(file_path_db), ''
         빌링번호별네고일자.네고일자 as 네고일자           
     FROM
         세금계산서 AS 세금계산서 
-    LEFT JOIN
-        물품수령증 AS 물품수령증 ON 세금계산서.세금계산서번호 = 물품수령증.세금계산서번호
+    LEFT JOIN (
+    SELECT *,
+        ROW_NUMBER() OVER (PARTITION BY 세금계산서번호 ORDER BY 전자문서번호 DESC) AS rn
+        FROM 물품수령증
+    ) AS 물품수령증 ON 세금계산서.세금계산서번호 = 물품수령증.세금계산서번호 AND 물품수령증.rn = 1
     LEFT JOIN
         내국신용장등록내역 AS 내국신용장등록내역 ON 세금계산서.신용장번호 = 내국신용장등록내역.신용장번호
     LEFT JOIN
@@ -578,7 +579,7 @@ df_joined_local_negoamount = merge_for_locallc_df(df_nerplc, df_joined_taxinv_re
 dict_default_opt = write_load_json('r',file_path_json)
 
 st.set_page_config(layout="wide")
-tab1, tab2, tab3, tab4 = st.tabs(["L/C등록(NERP)", "L/C현황", '세금계산서/물품수령증','옵션설정'])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["L/C등록(NERP)", "L/C현황", '세금계산서/물품수령증','옵션설정','세금계산서 내역삭제','물품수령증 내역삭제'])
 
 with tab1:
     tab1_col1, tab1_col2, tab1_col3 = st.columns([3, 0.3, 6])
@@ -838,8 +839,54 @@ with tab4:
             if st.button('새로고침  '):
                 pass
 
+with tab5:
+    tab5_col1, tab5_col2 = st.columns([5, 5])
+    with tab5_col1:
+        st.title('세금계산서 삭제')
+        st.dataframe(df_taxinv, width=1500, hide_index=True)
+    with tab5_col2:
+        st.title('세금계산서 삭제메뉴')
+        text_box_delete_taxinv = st.text_input(label=':red[삭제할 세금계산서번호를 입력하세요]', value='', max_chars=30, help='')#, autocomplete='on')
+        if st.button('세금계산서 내역 삭제'):
+            conn_db, db_cursor = db_open(file_path_db)
+            db_cursor.execute(f'DELETE FROM 세금계산서 WHERE 세금계산서번호 = "{text_box_delete_taxinv}"')
+            conn_db.commit()
+            conn_db.close()
+        if st.button('새로고침   '):
+            pass
 
-                    
+
+with tab6:
+    tab6_col1, tab6_col2 = st.columns([7, 3])
+    with tab6_col1:
+        st.title('물품수령증 삭제')
+        tab6_col1_col1, tab6_col1_col2 = st.columns([2,8])
+        with tab6_col1_col1:
+            filter_df_receipt_duplicate = st.selectbox('전체/중복건 보기', ['전체', '중복건'])
+        with tab6_col1_col2:
+            text_box_search_receipt = st.text_input(label="검색할 신용장 번호를 입력하고 Enter ", value='', max_chars=30, help='30자리 숫자만 입력 가능')#, autocomplete='on')
+        # 옵션값에 따라 다르게 표기하도록 세팅하는 코드 1(검색창)   
+        if text_box_search_receipt or text_box_search_receipt == '':
+            df_receipt_viewer = df_receipt[df_receipt['신용장번호'].str.contains(text_box_search_receipt)].sort_values('전자문서번호')
+        # 옵션값에 따라 다르게 표기하도록 세팅하는 코드 2(필터)   
+        if filter_df_receipt_duplicate == '중복건':
+            df_receipt_viewer = df_receipt_viewer[df_receipt_viewer.duplicated(subset=['세금계산서번호'], keep=False)]
+        # 옵션값에 따른 DataFrame표기
+        st.dataframe(df_receipt_viewer, width=1500, hide_index=True)
+
+    with tab6_col2:
+        st.title('물품수령증 삭제메뉴')
+        text_box_delete_receipt = st.text_input(label=':red[삭제할 (물품수령증의)전자문서번호를 입력하세요]', value='', max_chars=30, help='')#, autocomplete='on')
+        if st.button('물품수령증 내역 삭제'):
+            conn_db, db_cursor = db_open(file_path_db)
+            db_cursor.execute(f'DELETE FROM 물품수령증 WHERE 전자문서번호 = "{text_box_delete_receipt}"')
+            conn_db.commit()
+            conn_db.close()
+        if st.button('새로고침    '):
+            pass
+
+
+        
             
 
         
