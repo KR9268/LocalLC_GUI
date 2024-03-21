@@ -592,7 +592,7 @@ df_joined_local_negoamount = merge_for_locallc_df(df_nerplc, df_joined_taxinv_re
 dict_default_opt = write_load_json('r',file_path_json)
 
 st.set_page_config(layout="wide")
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["L/C등록(NERP)", "L/C현황", '세금계산서/물품수령증','옵션설정','세금계산서 내역삭제','물품수령증 내역삭제'])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["L/C등록(NERP)", "L/C현황", '세금계산서/물품수령증','옵션설정','세금계산서 내역삭제','물품수령증 내역삭제','참고사항'],)
 
 with tab1:
     tab1_col1, tab1_col2, tab1_col3 = st.columns([3, 0.3, 6])
@@ -898,6 +898,14 @@ with tab6:
         if st.button('새로고침    '):
             pass
 
+with tab7:
+    st.title('참고사이트')
+    tab7_col1, tab7_col2 = st.columns([2,8])
+    with tab7_col1:
+        st.link_button('KTNET(로컬LC사이트)', 'https://ulocallc.utradehub.or.kr/LocalCredit/index.jsp?sso=ok',)
+
+    with tab7_col2:    
+        st.write('이용안내(우측상단) → 업무절차별 이용안내(좌측) → 상세 업무절차')
 
         
             
