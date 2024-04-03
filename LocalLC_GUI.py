@@ -192,10 +192,10 @@ def update_nerp_lc(registeredlc_id, input_data)->None:
     conn_db.close() 
 
 def check_NegoDueDate(row):
-    if row['신용장_선적기일'] is None or row['신용장_선적기일'] == '신용장정보X':
-        lc_last_ship = None
+    if row['신용장_유효기일'] is None or row['신용장_유효기일'] == '신용장정보X':
+        lc_expiry = None
     else:
-        lc_last_ship = datetime.strptime(row['신용장_선적기일'],'%Y.%m.%d').date()
+        lc_expiry = datetime.strptime(row['신용장_유효기일'],'%Y.%m.%d').date()
 
     if row['수령증_발급일자'] is None:
         receipt_issue_date = None
@@ -203,27 +203,27 @@ def check_NegoDueDate(row):
         receipt_issue_date = datetime.strptime(row['수령증_발급일자'],'%Y-%m-%d').date()
         receipt_issue_date_5_workingday = np.busday_offset(np.datetime64(receipt_issue_date, 'D'), 5).astype(datetime)
 
-    if lc_last_ship is None:
+    if lc_expiry is None:
         return '신용장정보X'
     elif receipt_issue_date is None: # 신용장정보는 있지만 수령증은 없음
-        return lc_last_ship
+        return lc_expiry
     else: # 신용장정보와 수령증이 모두 있음 > 신용장 유효
-        return min(lc_last_ship, receipt_issue_date_5_workingday)
+        return min(lc_expiry, receipt_issue_date_5_workingday)
 
 def check_progress_localnego(row):
     if row['수령증_발급일자'] is None:
         receipt_issue_date = datetime.strptime('1900-01-01','%Y-%m-%d').date()
     else:
         receipt_issue_date = datetime.strptime(row['수령증_발급일자'],'%Y-%m-%d').date()
-    if row['신용장_선적기일'] == '신용장정보X':
-        lc_last_ship = datetime.strptime('1900.01.01','%Y.%m.%d').date()
+    if row['신용장_유효기일'] == '신용장정보X':
+        lc_expiry = datetime.strptime('1900.01.01','%Y.%m.%d').date()
     else:
-        lc_last_ship = datetime.strptime(row['신용장_선적기일'],'%Y.%m.%d').date()
+        lc_expiry = datetime.strptime(row['신용장_유효기일'],'%Y.%m.%d').date()
     receipt_issue_date_5_workingday = np.busday_offset(np.datetime64(receipt_issue_date, 'D'), 5).astype(datetime)
 
     if row['네고일자'] is not None:
         return '네고완료'
-    if lc_last_ship < datetime.today().date(): # 1순위)신용장 유효기간
+    if lc_expiry < datetime.today().date(): # 1순위)신용장 유효기간
         return '신용장 유효기간 만료'
     elif row['수령증_계산서번호'] is None or row['수령증_계산서번호'] == np.nan: # 2순위)수령증이 없는 케이스
         return '세금계산서가 발행되었으니 10일 이내 물품수령증 발행 필요\n(중소기업이 구매하는 경우는 예외)'
@@ -235,7 +235,7 @@ def check_progress_localnego(row):
         return 'Due date이내에 네고 필요'
     
 def chk_and_change_df(df_merged_3table:pd.DataFrame)->pd.DataFrame:
-    for column_name in ['신용장_선적기일','신용장_통화']:
+    for column_name in ['신용장_유효기일','신용장_통화']:
         df_merged_3table[column_name].fillna(value='신용장정보X', inplace=True)
 
     df_merged_3table['통화Chk'] = (df_merged_3table['계산서_통화'] == df_merged_3table['수령증_통화'])
