@@ -33,11 +33,11 @@ file_path_json = 'C:\\python_source\\LocalLC\\default_opt.json'
 
 # db복사본을 만들고 시작
 file_number = 0
-file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db')
+file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db').replace('\\LocalLC\\','\\LocalLC\\db_backup\\')
 while True:
     if os.path.exists(file_path_db_backup):
         file_number = file_number + 1
-        file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db')
+        file_path_db_backup = file_path_db.replace('.db',f',{datetime.strftime(datetime.today(),"%Y%m%d")}_{file_number}.db').replace('\\LocalLC\\','\\LocalLC\\db_backup\\')
     else:
         shutil.copy(file_path_db, file_path_db_backup)
         break
