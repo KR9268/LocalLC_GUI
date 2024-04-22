@@ -265,7 +265,7 @@ def merge_for_locallc_df(df_locallc:pd.DataFrame, df_joined_taxinv_receipt:pd.Da
     return merged_local_lc[['개설금액','네고완료_합계', '네고필요_합계','신용장번호', '인수통화', '인수금액', '인수잔액', 'ApplicantCode', 'PaymentCode',
        'PaymentText', 'Incoterms', '개설일자', '물품인도기일', '유효기일', 'Partial']]
 
-def input_and_search_xml_ZLLEI09020(session, companyid:str, msgid:str, date:list)->bool:
+def input_and_search_xml_ZLLEI09020(session, companyid:str, msgid:str, date:list, senderid:str=None)->bool:
     '''
         sap에서 메뉴 조작하기위해 사용 
         xmltype은 send/receive 2가지 입력
@@ -282,7 +282,8 @@ def input_and_search_xml_ZLLEI09020(session, companyid:str, msgid:str, date:list
 
     session.findById("wnd[0]/usr/ctxtS_MSGID-LOW").text = msgid #"LOCRCT"
     # session.findById("wnd[0]/usr/txtS_RID-LOW").text = searchid # RECEIVER ID
-    # session.findById("wnd[0]/usr/txtS_SID-LOW").text = searchid # SENDER ID
+    if senderid is not None:
+        session.findById("wnd[0]/usr/txtS_SID-LOW").text = senderid # SENDER ID
 
     # 날짜입력
     if type(date) == str: date_start, date_end = date, date
@@ -364,7 +365,7 @@ def loop_get_xml_ZLLEI09020(session, id_list:dict, db_table_name:str, convert_ta
             
             if id_list[key]['datatype'] == str:
                 temp_row[key] = str(temp_row[key])
-            elif id_list[key]['datatype'] == float:
+            elif id_list[key]['datatype'] == float: # 지정하고자 하는 타입이 float일때
                 temp_row[key] = float(temp_row[key])
             elif id_list[key]['datatype'] == datetime:
                 temp_row[key] = datetime.strptime(temp_row[key],'%y%m%d').date()
@@ -764,9 +765,13 @@ with tab3:
                 date = [[datetime.strftime(first_day,'%Y.%m.%d'),datetime.strftime(last_day,'%Y.%m.%d')]]
 
                 session = open_nerp_session()
+                senderid_dict = {'1157966':'PNA9848','6201102':'ICQUS7'}
+                payer_list = df_customer_info['ApplicantCode'].tolist()
+
                 for each_date in date:
-                    if input_and_search_xml_ZLLEI09020(session, companyid='C100', msgid='LOCRCT', date=each_date):
-                        loop_get_xml_ZLLEI09020(session, id_list=locrct_id, db_table_name='물품수령증')
+                    for payer_code in payer_list:
+                        if input_and_search_xml_ZLLEI09020(session, companyid='C100', msgid='LOCRCT', date=each_date, senderid=senderid_dict[payer_code]):
+                            loop_get_xml_ZLLEI09020(session, id_list=locrct_id, db_table_name='물품수령증')
 
 
 
