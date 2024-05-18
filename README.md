@@ -7,6 +7,7 @@
 - SAPGUI : SAP Scripting 활용
 - SAP권한 : ZLLEI09020, ZRSDM62110
 - main파일(LocalLC_GUI.py)과 옵션저장파일(default_opt.json), db파일(LocalLC.db)를 함께 둔다
+  - **기본동작 확인을 위해 샘플내용이 들어간 db가 포함되어있으나, 연결할 ERP가 없으면 추가기능은 사용 불가**
 
 ## 사용법
 - cmd 명령어 실행 : streamlit run .\경로\LocalLC_GUI.py
